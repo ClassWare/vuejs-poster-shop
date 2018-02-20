@@ -15,18 +15,55 @@
     <link rel="stylesheet" type="text/css" href="public/style.css">
 </head>
 <body>
-<div id="app">
+<div id="app" v-cloak>
     <div class="header">
         <h1>Vue.js Poster Store</h1>
+        <form class="searchbar" v-on:submit.prevent="onSubmit">
+          <input placeholder="Search for posters" v-model="newSearch">
+          <input type="submit" value="search" class="btn">
+        </form>
     </div>
     <div class="main">
         <div class="products">
-            <p>Products go here.</p>
+          <div v-if="loading" class="search-results">
+            Loading ...
+          </div>
+          <div v-else class="search-results">
+            Found {{ items.length }} results for search term {{ lastSearch }}
+          </div>
+            <div class="product" v-for="(item,index) in items">
+              <div>
+                <div class="product-image">
+                  <img v-bind:src="item.link">
+                </div>
+              </div>
+              <div>
+                <h4 class="product-title">{{item.title | capitalize }}</h4>
+                  <p>Price: <strong> {{ price | currency }} </strong></p>
+                  <button class="btn add-to-cart" @click="addItem(index)">AddToCart</button>
+              </div>
+            </div>
+            <div id="product-list-bottom" style="height:20px"
+              v-if="noMoreItems">
+              No more items.
+            </div>
         </div>
         <div class="cart">
             <h2>Shopping Cart</h2>
+            <transition-group name="fade" tag="ul">
+              <li class="cart-item" v-for="(cartItem,index) in cart" v-bind:key="cartItem.id">
+                <div class="item-title">{{ cartItem.title }}</div>
+                <span class="item-qty">{{ cartItem.qty }} x {{ cartItem.price | currency }}</span>
+                <span class="item-qty"> = {{ (cartItem.qty * cartItem.price) | currency }}</span>
+                <button class="btn" @click="adjustCartItem(index,'+')">+</button>
+                <button class="btn "@click="adjustCartItem(index,'-')">-</button>
+              </li>
+            </transition-group>
             <div>
-                No items in the cart.
+              <transition name="fade">
+                <div v-if="cart.length > 0">Total: {{ total | currency }}</div>
+              </transition>
+              <div v-if="cart.length === 0">Cart is empty</div>
             </div>
         </div>
     </div>
@@ -34,6 +71,9 @@
 
 <!-- Scripts -->
 <script src="reload/reload.js"></script>
+<script src="node_modules/vue/dist/vue.js"></script>
+<script src="node_modules/vue-resource/dist/vue-resource.js"></script>
+<script src="node_modules/scrollmonitor/scrollmonitor.js"></script>
 <script type="text/javascript" src="public/script.js"></script>
 
 </body>
